@@ -4,6 +4,7 @@ from Transacao import Transacao
 
 
 x = ControleFinanceiro()
+p = 2
 while True:
 
     print()
