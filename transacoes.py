@@ -10,3 +10,12 @@ class Transacao:
     def __str__(self):
         return (
             f"Valor: R$ {self.valor:.2f} | Data: {self.data}| Tipo: {self.tipo.upper()} | Categoria: {self.categoria}")
+
+    @staticmethod
+    def from_dict(dados):
+        return Transacao(
+            dados["tipo"],
+            dados["valor"],
+            dados["data"].date() if isinstance(dados["data"], datetime.datetime) else dados["data"],
+            dados["categoria"]
+        )
