@@ -1,17 +1,22 @@
 import datetime
+from database import Database
 from transacoes import Transacao
 
 class ControleFinanceiro:
     def __init__(self):
         self.transacoes = [] # lista de objetos Transacao
+        self.db = Database()
+        self.carregar_transacoes()
 
     def nova_receita(self, obj_receita):
         self.transacoes.append(obj_receita)
+        self.db.salvar_transacao(obj_receita)
         print("Receita adicionada:", obj_receita)
 
 
     def nova_despesa(self, obj_despesa):
         self.transacoes.append(obj_despesa)
+        self.db.salvar_transacao(obj_despesa)
         print("Despesa adicionada:", obj_despesa)
 
     def saldo(self, lista = None):
@@ -68,3 +73,9 @@ class ControleFinanceiro:
         self.listar_transacoes(transacoes_periodo)
         self.saldo(transacoes_periodo)
 
+
+    def carregar_transacoes(self):
+        dados = self.db.buscar_transacoes()
+        for d in dados:
+            transacao = Transacao.from_dict(d)
+            self.transacoes.append(transacao)
