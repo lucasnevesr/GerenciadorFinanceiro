@@ -1,4 +1,4 @@
-
+import datetime
 
 class Transacao:
     def __init__(self, tipo, valor, data, categoria):
@@ -13,6 +13,7 @@ class Transacao:
 
     @staticmethod
     def from_dict(dados):
+
         return Transacao(
             dados["tipo"],
             dados["valor"],

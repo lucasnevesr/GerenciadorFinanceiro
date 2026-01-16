@@ -3,6 +3,10 @@ from database import Database
 from transacoes import Transacao
 
 class ControleFinanceiro:
+    # Categorias definidas dentro da classe
+    CATEGORIAS_RECEITA = ["Salário", "Freelance", "Outros"]
+    CATEGORIAS_DESPESA = ["Alimentação", "Transporte", "Saúde", "Educação", "Lazer", "Moradia", "Outros"]
+
     def __init__(self):
         self.transacoes = [] # lista de objetos Transacao
         self.db = Database()
@@ -75,7 +79,26 @@ class ControleFinanceiro:
 
 
     def carregar_transacoes(self):
+        self.transacoes = []  # limpa antes de carregar para evitar duplicação
         dados = self.db.buscar_transacoes()
         for d in dados:
             transacao = Transacao.from_dict(d)
             self.transacoes.append(transacao)
+
+    def escolher_categoria(self, tipo):
+        if (tipo == "receita"):
+            categorias = self.CATEGORIAS_RECEITA
+        else:
+            categorias = self.CATEGORIAS_DESPESA
+
+        print(f"\nEscolha uma categoria de {tipo}:")
+        for i, cat in enumerate(categorias, start=1):
+            print(f"{i} - {cat}")
+        try:
+            op = int(input("Selecione: "))
+            if (1 <= op <= len(categorias)):
+                return categorias[op - 1]
+        except ValueError:
+            pass
+        print("Opção inválida. Categoria definida como 'Outros'.")
+        return "Outros"
