@@ -1,11 +1,26 @@
 from pymongo import MongoClient
 import datetime
+from dados_db import mongo_pass, mongo_user
 
 class Database:
     def __init__(self):
-        self.client = MongoClient("mongodb+srv://nevessricardoo_db_user:wxe93UB6N1rCnWmO@cluster0.lhhjnfe.mongodb.net/?appName=Cluster0")
-        self.db = self.client["controle_financeiro"]
-        self.collection = self.db["transacoes"]
+        try:
+            self.client = MongoClient(
+                f"mongodb+srv://{mongo_user}:{mongo_pass}@cluster0.lhhjnfe.mongodb.net/?appName=Cluster0",
+                serverSelectionTimeoutMS=5000
+            )
+
+            # 🔹 PING no MongoDB
+            self.client.admin.command("ping")
+            print("Conexão com MongoDB estabelecida com sucesso")
+
+            self.db = self.client["controle_financeiro"]
+            self.collection = self.db["transacoes"]
+
+        except Exception as e:
+            print("Erro ao conectar no MongoDB")
+            print(e)
+            raise  # força erro para não rodar app sem DB
 
     def salvar_transacao(self, transacao):
         documento = {

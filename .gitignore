@@ -1,5 +1,6 @@
 # PyCharm
 .idea/
+dados_db.py
 
 # Python
 __pycache__/
@@ -8,3 +9,4 @@ __pycache__/
 # Ambiente virtual
 venv/
 .env/
+
