@@ -13,6 +13,7 @@ def menu():              # criação da função menu
         print("3 - Listar Transação")
         print("4 - Consultar Saldo")
         print("5 - Relatório")
+        print("6 - Remover Transação")
         print("0 - Sair")
 
         try:
@@ -57,6 +58,9 @@ def menu():              # criação da função menu
 
         elif (op == 5):
             obj_cf.relatorio_30dias()
+
+        elif (op == 6):
+            obj_cf.excluir_transacao()
 
         elif (op == 0):
             print("Saindo do sistema...")

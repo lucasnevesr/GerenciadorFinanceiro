@@ -45,8 +45,7 @@ class ControleFinanceiro:
         return saldo
 
 
-    def listar_transacoes(self, lista = None):
-
+    def listar_transacoes(self, lista=None):
         if lista is not None:
             transacoes = lista
         else:
@@ -56,8 +55,37 @@ class ControleFinanceiro:
         if not transacoes:
             print("Nenhuma transação registrada.")
         else:
-            for t in transacoes:
-                print(t)
+            # O enumerate começa do 1
+            for i, t in enumerate(transacoes, start=1):
+                print(f"{i} - {t}")
+
+
+    def excluir_transacao(self):
+        self.listar_transacoes()
+        if not self.transacoes:
+            return
+
+        try:
+            indice = int(input("Digite o número da transação a excluir: "))
+
+            #a lista em Python começa em 0, mas mostrámos a partir de 1
+            idx_real = indice - 1
+
+            #verifica se o índice é positivo (>= 0) e se está dentro do limite da lista
+            if (idx_real >= 0 and idx_real < len(self.transacoes)):
+                transacao_remover = self.transacoes[idx_real]
+
+                # 1. Remove do Banco de Dados
+                self.db.remover_transacao(transacao_remover)
+
+                # 2. Remove da Lista em Memória
+                self.transacoes.pop(idx_real)
+
+                print("Transação removida com sucesso!")
+            else:
+                print("Número inválido.")
+        except ValueError:
+            print("Entrada inválida. Digite um número inteiro.")
 
 
     def relatorio_30dias(self):
