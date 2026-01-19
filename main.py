@@ -3,7 +3,7 @@ from transacoes import Transacao
 from controle_financeiro import ControleFinanceiro
 
 def menu():              # criação da função menu
-    obj_cf = ControleFinanceiro()   #Criação do objeto apartir da Classe ControleFinanceiro
+    obj_cf = ControleFinanceiro()   #Criação do objeto a partir da Classe ControleFinanceiro
 
     while True:
         print("\n----- |MENU| -----")
@@ -30,7 +30,7 @@ def menu():              # criação da função menu
                 print("Entrada inválida.")
                 continue
             data = datetime.date.today()
-            categoria = input("Digite a categoria: ")
+            categoria = obj_cf.escolher_categoria("receita")      # Chamando mét. escolher_categoria: lista de receita
             transacao = Transacao("receita", valor, data, categoria)
             obj_cf.nova_receita(transacao)
 
@@ -44,7 +44,7 @@ def menu():              # criação da função menu
                 print("Entrada inválida.")
                 continue
             data = datetime.date.today()
-            categoria = input("Digite a categoria: ")
+            categoria = obj_cf.escolher_categoria("despesa")     # Chamando mét. escolher_categoria: lista de Despesa
             transacao = Transacao("despesa", valor, data, categoria)
             obj_cf.nova_despesa(transacao)
 
@@ -67,4 +67,3 @@ def menu():              # criação da função menu
 
 if __name__== "__main__":
     menu()
-
