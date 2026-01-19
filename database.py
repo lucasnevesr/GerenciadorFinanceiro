@@ -31,5 +31,18 @@ class Database:
         }
         self.collection.insert_one(documento)
 
+
     def buscar_transacoes(self):
         return list(self.collection.find({}, {"_id": 0}))
+
+
+    def remover_transacao(self, transacao):
+        # Cria um filtro com os dados exatos da transação para encontrar no banco
+        filtro = {
+            "tipo": transacao.tipo,
+            "valor": transacao.valor,
+            "data": datetime.datetime.combine(transacao.data, datetime.time()),
+            "categoria": transacao.categoria
+        }
+        # delete_one apaga apenas a primeira ocorrência encontrada
+        self.collection.delete_one(filtro)
