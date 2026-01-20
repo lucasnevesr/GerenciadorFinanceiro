@@ -22,33 +22,40 @@ def menu():              # criação da função menu
             print("Entrada inválida! Digite um valor numérico.")
             continue
 
-        if (op == 1):
-            try:
-                valor = float(input("Digite o valor da receita: "))
-                if (valor < 0):
-                    print("O valor não pode ser negativo.")
-                    continue
-            except ValueError:
-                print("Entrada inválida.")
-                continue
-            data = datetime.date.today()
-            categoria = obj_cf.escolher_categoria("receita")      # Chamando mét. escolher_categoria: lista de receita
-            transacao = Transacao("receita", valor, data, categoria)
-            obj_cf.nova_receita(transacao)
+        if op == 1 or op == 2:
+            tipo_txt = "receita" if op == 1 else "despesa"
 
-        elif (op == 2):
             try:
-                valor = float(input("Digite o valor da despesa: "))
-                if (valor < 0):
+                valor_inicial = float(input(f"Digite o valor da {tipo_txt}: "))
+                if valor_inicial < 0:
                     print("O valor não pode ser negativo.")
                     continue
             except ValueError:
                 print("Entrada inválida.")
                 continue
+
+            # --- NOVA LÓGICA DE MOEDA ---
+            print("Moeda: [1] Real (BRL) - Padrão | [2] Dólar (USD)")
+            opcao_moeda = input("Selecione: ")
+
+            #se apertar Enter direto ou digitar 1, é real e se digitar 2, é dólar
+            valor_final = valor_inicial  #assume Real por padrão
+
+            if opcao_moeda == '2':
+                # chama a conversão que da classe
+                valor_final = obj_cf.converter_dolar_para_real(valor_inicial)
+            # ----------------------------
+
             data = datetime.date.today()
-            categoria = obj_cf.escolher_categoria("despesa")     # Chamando mét. escolher_categoria: lista de Despesa
-            transacao = Transacao("despesa", valor, data, categoria)
-            obj_cf.nova_despesa(transacao)
+            categoria = obj_cf.escolher_categoria(tipo_txt)
+
+            # Cria a transação sempre com o valor final em Reais
+            transacao = Transacao(tipo_txt, valor_final, data, categoria)
+
+            if op == 1:
+                obj_cf.nova_receita(transacao)
+            else:
+                obj_cf.nova_despesa(transacao)
 
         elif (op == 3):
             obj_cf.listar_transacoes()

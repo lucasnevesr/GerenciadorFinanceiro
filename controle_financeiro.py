@@ -1,6 +1,7 @@
 import datetime
 from database import Database
 from transacoes import Transacao
+import requests
 
 class ControleFinanceiro:
     # Categorias definidas dentro da classe
@@ -106,12 +107,15 @@ class ControleFinanceiro:
         self.saldo(transacoes_periodo)
 
 
+
     def carregar_transacoes(self):
         self.transacoes = []  # limpa antes de carregar para evitar duplicação
         dados = self.db.buscar_transacoes()
         for d in dados:
             transacao = Transacao.from_dict(d)
             self.transacoes.append(transacao)
+
+
 
     def escolher_categoria(self, tipo):
         if (tipo == "receita"):
@@ -130,3 +134,27 @@ class ControleFinanceiro:
             pass
         print("Opção inválida. Categoria definida como 'Outros'.")
         return "Outros"
+
+
+
+    def converter_dolar_para_real(self, valor_em_dolar):
+        try:
+            print("Consultando cotação do Dólar...")
+            url = "https://economia.awesomeapi.com.br/last/USD-BRL"
+            resposta = requests.get(url)
+
+            if resposta.status_code == 200:
+                dados = resposta.json()
+                # 'bid' é o valor de compra (geralmente usado como referência de mercado)
+                cotacao = float(dados['USDBRL']['bid'])
+                valor_convertido = valor_em_dolar * cotacao
+
+                print(f"Cotação Atual: R$ {cotacao:.2f}")
+                print(f"Valor Convertido: US$ {valor_em_dolar:.2f} -> R$ {valor_convertido:.2f}")
+                return valor_convertido
+            else:
+                print("Erro ao conectar na API. Usando valor original.")
+                return valor_em_dolar
+        except Exception as e:
+            print(f"Erro na conversão: {e}")
+            return valor_em_dolar
