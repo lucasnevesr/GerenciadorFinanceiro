@@ -1,6 +1,5 @@
 import datetime
 from transacoes import Transacao
-
 from controle_financeiro import ControleFinanceiro
 
 def menu():              # criação da função menu
@@ -49,8 +48,13 @@ def menu():              # criação da função menu
             data = datetime.date.today()
             categoria = obj_cf.escolher_categoria(tipo_txt)
 
-            # Cria a transação sempre com o valor final em Reais
-            transacao = Transacao(tipo_txt, valor_final, data, categoria)
+            # --- Forma de pagamento (nova) ---
+            forma_pgto = obj_cf.escolher_forma_pgto()
+
+            # Cria a transação sempre com o valor final em Reais e, //agora, Transacao recebe forma_pgto (novo)
+            transacao = Transacao(tipo_txt, valor_final, data, categoria, forma_pgto)
+
+
 
             if op == 1:
                 obj_cf.nova_receita(transacao)
