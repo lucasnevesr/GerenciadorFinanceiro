@@ -19,5 +19,5 @@ class Transacao:
             dados["valor"],
             dados["data"].date() if isinstance(dados["data"], datetime.datetime) else dados["data"],
             dados["categoria"],
-            dados["forma_pgto"]   # novo elemento
+            dados.get("forma_pgto", "Outros")
         )
