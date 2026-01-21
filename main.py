@@ -2,8 +2,28 @@ import datetime
 from transacoes import Transacao
 from controle_financeiro import ControleFinanceiro
 
-def menu():              # criação da função menu
-    obj_cf = ControleFinanceiro()   #Criação do objeto a partir da Classe ControleFinanceiro
+
+
+def ler_data():
+    while True:
+        entrada = input("Informe a Data (dd/mm/aaaa) ou [Enter para hoje]: ")
+
+        #se o usuário der enter (string vazia), retorna data de hoje
+        if not entrada:
+            return datetime.date.today()
+
+        try:
+            #tenta converter o texto para data
+            data_formatada = datetime.datetime.strptime(entrada, "%d/%m/%Y").date()
+            return data_formatada
+        except ValueError:
+            print("Formato inválido! Use dia/mês/ano (ex: 25/12/2025).")
+
+
+# -------------------
+
+def menu():
+    obj_cf = ControleFinanceiro()
 
     while True:
         print("\n----- |MENU| -----")
@@ -33,28 +53,25 @@ def menu():              # criação da função menu
                 print("Entrada inválida.")
                 continue
 
-            # --- NOVA LÓGICA DE MOEDA ---
+            #  LÓGICA DE MOEDA
             print("Moeda: [1] Real (BRL) - Padrão | [2] Dólar (USD)")
             opcao_moeda = input("Selecione: ")
 
-            #se apertar Enter direto ou digitar 1, é real e se digitar 2, é dólar
-            valor_final = valor_inicial  #assume Real por padrão
+            valor_final = valor_inicial
 
             if opcao_moeda == '2':
-                # chama a conversão que da classe
                 valor_final = obj_cf.converter_dolar_para_real(valor_inicial)
-            # ----------------------------
 
-            data = datetime.date.today()
+            #DATA PERSONALIZADA
+            data = ler_data()
+            # --------------------------
+
             categoria = obj_cf.escolher_categoria(tipo_txt)
 
-            # --- Forma de pagamento (nova) ---
+            #forma de pagamento
             forma_pgto = obj_cf.escolher_forma_pgto()
 
-            # Cria a transação sempre com o valor final em Reais e, //agora, Transacao recebe forma_pgto (novo)
             transacao = Transacao(tipo_txt, valor_final, data, categoria, forma_pgto)
-
-
 
             if op == 1:
                 obj_cf.nova_receita(transacao)
@@ -81,5 +98,5 @@ def menu():              # criação da função menu
             print("Opção inválida, tente novamente.")
 
 
-if __name__== "__main__":
+if __name__ == "__main__":
     menu()
