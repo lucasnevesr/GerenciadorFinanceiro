@@ -1,16 +1,23 @@
 from pymongo import MongoClient
 import datetime
-from dados_db import mongo_pass, mongo_user
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Database:
     def __init__(self):
+
+        db_user = os.getenv("MONGO_USER")
+        db_pass = os.getenv("MONGO_PASS")
+
         try:
             self.client = MongoClient(
-                f"mongodb+srv://{mongo_user}:{mongo_pass}@cluster0.lhhjnfe.mongodb.net/?appName=Cluster0",
+                f"mongodb+srv://{db_user}:{db_pass}@cluster0.lhhjnfe.mongodb.net/?appName=Cluster0",
                 serverSelectionTimeoutMS=5000
             )
 
-            # 🔹 PING no MongoDB
+            # ping no MongoDB
             self.client.admin.command("ping")
             print("Conexão com MongoDB estabelecida com sucesso")
 
