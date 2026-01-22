@@ -31,7 +31,7 @@ def menu():
         print("2 - Nova Despesa")
         print("3 - Listar Transação")
         print("4 - Consultar Saldo")
-        print("5 - Relatório")
+        print("5 - Relatórios")
         print("6 - Remover Transação")
         print("0 - Sair")
 

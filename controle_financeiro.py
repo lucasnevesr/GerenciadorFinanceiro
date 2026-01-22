@@ -1,6 +1,7 @@
 import datetime
 from database import Database
 from transacoes import Transacao
+import matplotlib
 import requests
 
 class ControleFinanceiro:
@@ -89,14 +90,18 @@ class ControleFinanceiro:
         except ValueError:
             print("Entrada inválida. Digite um número inteiro.")
 
-
     def relatorio_30dias(self):
+        import datetime
+        import matplotlib.pyplot as plt
+        import numpy as np
+
         hoje = datetime.date.today()
         limite = hoje - datetime.timedelta(days=30)
         transacoes_periodo = []
 
+        # Filtrar transações
         for t in self.transacoes:
-            if (t.data >= limite):
+            if t.data >= limite:
                 transacoes_periodo.append(t)
 
         print("\n=== Relatório dos últimos 30 dias ===")
@@ -104,8 +109,117 @@ class ControleFinanceiro:
             print("Nenhuma transação registrada nesse período.")
             return
 
+        # Seu relatório original
         self.listar_transacoes(transacoes_periodo)
         self.saldo(transacoes_periodo)
+
+        def relatorio_30dias(self):
+            import datetime
+            import matplotlib.pyplot as plt
+
+            hoje = datetime.date.today()
+            limite = hoje - datetime.timedelta(days=30)
+            transacoes_periodo = []
+
+            # Filtrar transações
+            for t in self.transacoes:
+                if t.data >= limite:
+                    transacoes_periodo.append(t)
+
+            print("\n=== Relatório dos últimos 30 dias ===")
+            if not transacoes_periodo:
+                print("Nenhuma transação registrada nesse período.")
+                return
+
+            # Relatórios textuais
+            self.listar_transacoes(transacoes_periodo)
+            self.saldo(transacoes_periodo)
+
+            # -----------------------------
+            # 🟦 GRÁFICO PRINCIPAL: RECEITA x DESPESA x SALDO
+            # -----------------------------
+            total_receitas = sum(t.valor for t in transacoes_periodo if t.tipo == "receita")
+            total_despesas = sum(t.valor for t in transacoes_periodo if t.tipo == "despesa")
+            total_saldo = total_receitas - total_despesas
+
+            valores = [total_receitas, total_despesas, total_saldo]
+            labels = ["Receitas", "Despesas", "Saldo"]
+
+            plt.figure(figsize=(7, 7))
+            plt.pie(valores, labels=labels, autopct='%1.1f%%')
+            plt.title("Receita x Despesa x Saldo — Últimos 30 dias")
+            plt.tight_layout()
+            plt.show()
+
+            # -----------------------------
+            # 🟩 GRÁFICO DE RECEITAS POR CATEGORIA
+            # -----------------------------
+            receitas_por_categoria = {cat: 0 for cat in CATEGORIAS_RECEITA}
+
+            for t in transacoes_periodo:
+                if t.tipo == "receita":
+                    if t.categoria in receitas_por_categoria:
+                        receitas_por_categoria[t.categoria] += t.valor
+                    else:
+                        receitas_por_categoria["Outros"] += t.valor
+
+            valores_receita = list(receitas_por_categoria.values())
+            labels_receita = list(receitas_por_categoria.keys())
+
+            if sum(valores_receita) > 0:
+                plt.figure(figsize=(7, 7))
+                plt.pie(valores_receita, labels=labels_receita, autopct='%1.1f%%')
+                plt.title("Receitas por Categoria — Últimos 30 dias")
+                plt.tight_layout()
+                plt.show()
+            else:
+                print("\nNenhuma receita registrada no período para gerar gráfico por categoria.")
+
+
+        # -----------------------------
+        # 🟦 GRÁFICO MENSAL DO PERÍODO
+        # -----------------------------
+
+        # Cria listas para meses e valores
+        meses_ordem = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul",
+                       "Ago", "Set", "Out", "Nov", "Dez"]
+
+        receitas_mensais = {m: 0 for m in meses_ordem}
+        despesas_mensais = {m: 0 for m in meses_ordem}
+
+        # Popular dados APENAS do período
+        for t in transacoes_periodo:
+            mes_nome = meses_ordem[t.data.month - 1]
+
+            if t.tipo == "receita":
+                receitas_mensais[mes_nome] += t.valor
+            elif t.tipo == "despesa":
+                despesas_mensais[mes_nome] += t.valor
+
+        # Listas para o gráfico
+        meses = list(receitas_mensais.keys())
+        receitas = list(receitas_mensais.values())
+        despesas = list(despesas_mensais.values())
+        saldo = [r - d for r, d in zip(receitas, despesas)]
+
+        # Montar o gráfico
+        x = np.arange(len(meses))
+        largura = 0.25
+
+        plt.figure(figsize=(10, 5))
+        plt.bar(x - largura, receitas, width=largura, label='Receitas', color='blue')
+        plt.bar(x, despesas, width=largura, label='Despesas', color='orange')
+        plt.bar(x + largura, saldo, width=largura, label='Saldo', color='green')
+
+        plt.title("Receita x Despesa x Saldo — Últimos 30 dias (por mês)")
+        plt.xlabel("Meses")
+        plt.ylabel("Valores (R$)")
+        plt.xticks(x, meses)
+        plt.legend()
+        plt.grid(axis='y', linestyle='--', alpha=0.3)
+
+        plt.tight_layout()
+        plt.show()
 
 
 
