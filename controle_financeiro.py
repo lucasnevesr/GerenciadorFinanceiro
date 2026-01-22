@@ -8,6 +8,7 @@ class ControleFinanceiro:
     # Categorias definidas dentro da classe
     CATEGORIAS_RECEITA = ["Salário", "Freelance", "Outros"]
     CATEGORIAS_DESPESA = ["Alimentação", "Transporte", "Saúde", "Educação", "Lazer", "Moradia", "Outros"]
+    FORMAS_PGTO = ["Dinheiro", "Cartão de Crédito", "Cartão de Débito", "Pix", "Outros"]      # nova lista
 
     def __init__(self):
         self.transacoes = [] # lista de objetos Transacao
@@ -272,3 +273,16 @@ class ControleFinanceiro:
         except Exception as e:
             print(f"Erro na conversão: {e}")
             return valor_em_dolar
+
+    def escolher_forma_pgto(self):                   # novo mét. escolher forma de pagamento
+        print("\nEscolha a forma de pagamento ou recebimento: ")
+        for i, f in enumerate(self.FORMAS_PGTO, start=1):
+            print(f"{i} - {f}")
+        try:
+            op = int(input("Selecione: "))
+            if (1 <= op <= len(self.FORMAS_PGTO)):
+                return self.FORMAS_PGTO[op - 1]
+        except ValueError:
+            pass
+        print("Opção inválida. Forma de pagamento definida como 'Outros'.")
+        return "Outros"

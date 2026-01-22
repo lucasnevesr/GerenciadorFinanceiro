@@ -27,7 +27,8 @@ class Database:
             "tipo": transacao.tipo,
             "valor": transacao.valor,
             "data": datetime.datetime.combine(transacao.data, datetime.time()),
-            "categoria": transacao.categoria
+            "categoria": transacao.categoria,
+            "forma_pgto": transacao.forma_pgto  # incluído no doc
         }
         self.collection.insert_one(documento)
 
@@ -42,7 +43,8 @@ class Database:
             "tipo": transacao.tipo,
             "valor": transacao.valor,
             "data": datetime.datetime.combine(transacao.data, datetime.time()),
-            "categoria": transacao.categoria
+            "categoria": transacao.categoria,
+            "forma_pgto": transacao.forma_pgto  # incluído no filtro
         }
         # delete_one apaga apenas a primeira ocorrência encontrada
         self.collection.delete_one(filtro)
