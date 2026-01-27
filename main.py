@@ -20,7 +20,7 @@ def ler_data():
             print("Formato inválido! Use dia/mês/ano (ex: 25/12/2025).")
 
 
-# -------------------
+#menu ---------
 
 def menu():
     obj_cf = ControleFinanceiro()
@@ -53,7 +53,7 @@ def menu():
                 print("Entrada inválida.")
                 continue
 
-            #  LÓGICA DE MOEDA
+            #lógica de moeda
             print("Moeda: [1] Real (BRL) - Padrão | [2] Dólar (USD)")
             opcao_moeda = input("Selecione: ")
 
@@ -85,7 +85,7 @@ def menu():
             obj_cf.saldo()
 
         elif (op == 5):
-            obj_cf.relatorio_30dias()
+            obj_cf.menu_relatorios()
 
         elif (op == 6):
             obj_cf.excluir_transacao()

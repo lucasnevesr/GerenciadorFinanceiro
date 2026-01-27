@@ -1,14 +1,14 @@
 import datetime
+import requests
 from database import Database
 from transacoes import Transacao
-import matplotlib
-import requests
+import graficos as gf  # Importa o módulo de gráficos que criamos
 
 class ControleFinanceiro:
     # Categorias definidas dentro da classe
     CATEGORIAS_RECEITA = ["Salário", "Freelance", "Outros"]
     CATEGORIAS_DESPESA = ["Alimentação", "Transporte", "Saúde", "Educação", "Lazer", "Moradia", "Outros"]
-    FORMAS_PGTO = ["Dinheiro", "Cartão de Crédito", "Cartão de Débito", "Pix", "Outros"]      # nova lista
+    FORMAS_PGTO = ["Dinheiro", "Cartão de Crédito", "Cartão de Débito", "Pix", "Outros"]
 
     def __init__(self):
         self.transacoes = [] # lista de objetos Transacao
@@ -20,13 +20,12 @@ class ControleFinanceiro:
         self.db.salvar_transacao(obj_receita)
         print("Receita adicionada:", obj_receita)
 
-
     def nova_despesa(self, obj_despesa):
         self.transacoes.append(obj_despesa)
         self.db.salvar_transacao(obj_despesa)
         print("Despesa adicionada:", obj_despesa)
 
-    def saldo(self, lista = None):
+    def saldo(self, lista=None):
         if lista is not None:
             transacoes = lista
         else:
@@ -36,17 +35,14 @@ class ControleFinanceiro:
         soma_despesa = 0
 
         for tr in transacoes:
-            if (tr.tipo.lower() == "receita"):
+            if tr.tipo.lower() == "receita":
                 soma_receita += tr.valor
-
-            elif (tr.tipo.lower() == "despesa"):
+            elif tr.tipo.lower() == "despesa":
                 soma_despesa += tr.valor
 
         saldo = soma_receita - soma_despesa
         print(f"Saldo atual: R$ {saldo:.2f}")
-
         return saldo
-
 
     def listar_transacoes(self, lista=None):
         if lista is not None:
@@ -62,6 +58,12 @@ class ControleFinanceiro:
             for i, t in enumerate(transacoes, start=1):
                 print(f"{i} - {t}")
 
+    def carregar_transacoes(self):
+        self.transacoes = []  # limpa antes de carregar para evitar duplicação
+        dados = self.db.buscar_transacoes()
+        for d in dados:
+            transacao = Transacao.from_dict(d)
+            self.transacoes.append(transacao)
 
     def excluir_transacao(self):
         self.listar_transacoes()
@@ -70,12 +72,11 @@ class ControleFinanceiro:
 
         try:
             indice = int(input("Digite o número da transação a excluir: "))
-
-            #a lista em Python começa em 0, mas mostrámos a partir de 1
+            # a lista em Python começa em 0, mas mostrámos a partir de 1
             idx_real = indice - 1
 
-            #verifica se o índice é positivo (>= 0) e se está dentro do limite da lista
-            if (idx_real >= 0 and idx_real < len(self.transacoes)):
+            # verifica se o índice é positivo (>= 0) e se está dentro do limite da lista
+            if idx_real >= 0 and idx_real < len(self.transacoes):
                 transacao_remover = self.transacoes[idx_real]
 
                 # 1. Remove do Banco de Dados
@@ -90,150 +91,81 @@ class ControleFinanceiro:
         except ValueError:
             print("Entrada inválida. Digite um número inteiro.")
 
-    def relatorio_30dias(self):
-        import datetime
-        import matplotlib.pyplot as plt
-        import numpy as np
 
-        hoje = datetime.date.today()
-        limite = hoje - datetime.timedelta(days=30)
-        transacoes_periodo = []
 
-        # Filtrar transações
-        for t in self.transacoes:
-            if t.data >= limite:
-                transacoes_periodo.append(t)
+    def menu_relatorios(self):
+        print("\n=== SELEÇÃO DE PERÍODO ===")
+        print("1 - Últimos 30 dias")
+        print("2 - Últimos 60 dias")
+        print("3 - Últimos 90 dias")
+        print("4 - Último Ano (365 dias)")
+        print("5 - Todo o período")
+        print("0 - Voltar")
 
-        print("\n=== Relatório dos últimos 30 dias ===")
-        if not transacoes_periodo:
-            print("Nenhuma transação registrada nesse período.")
+        try:
+            op_periodo = int(input("Escolha o período: "))
+        except ValueError:
+            print("Opção inválida.")
             return
 
-        # Seu relatório original
-        self.listar_transacoes(transacoes_periodo)
-        self.saldo(transacoes_periodo)
+        if op_periodo == 0:
+            return
 
-        def relatorio_30dias(self):
-            import datetime
-            import matplotlib.pyplot as plt
-
-            hoje = datetime.date.today()
-            limite = hoje - datetime.timedelta(days=30)
-            transacoes_periodo = []
-
-            # Filtrar transações
-            for t in self.transacoes:
-                if t.data >= limite:
-                    transacoes_periodo.append(t)
-
-            print("\n=== Relatório dos últimos 30 dias ===")
-            if not transacoes_periodo:
-                print("Nenhuma transação registrada nesse período.")
+        #filtragem de datas
+        lista_filtrada = []
+        if op_periodo == 5:
+            lista_filtrada = self.transacoes
+            print(f"\nSelecionado: Todo o período ({len(lista_filtrada)} transações)")
+        else:
+            dias_map = {1: 30, 2: 60, 3: 90, 4: 365}
+            if op_periodo in dias_map:
+                dias = dias_map[op_periodo]
+                limite = datetime.date.today() - datetime.timedelta(days=dias)
+                # Filtra apenas as que são mais recentes que o limite
+                lista_filtrada = [t for t in self.transacoes if t.data >= limite]
+                print(f"\nSelecionado: Últimos {dias} dias ({len(lista_filtrada)} transações)")
+            else:
+                print("Opção inválida.")
                 return
 
-            # Relatórios textuais
-            self.listar_transacoes(transacoes_periodo)
-            self.saldo(transacoes_periodo)
+        if not lista_filtrada:
+            print("Não há dados neste período para gerar gráficos.")
+            return
 
-            # -----------------------------
-            # 🟦 GRÁFICO PRINCIPAL: RECEITA x DESPESA x SALDO
-            # -----------------------------
-            total_receitas = sum(t.valor for t in transacoes_periodo if t.tipo == "receita")
-            total_despesas = sum(t.valor for t in transacoes_periodo if t.tipo == "despesa")
-            total_saldo = total_receitas - total_despesas
+        #menu tipo de gráfico (loop para permitir ver vários sem sair)
+        while True:
+            print("\n--- TIPOS DE RELATÓRIO ---")
+            print("1 - Listar Transações e Saldo")
+            print("2 - Gráfico: Receita x Despesa")
+            print("3 - Gráfico: Receitas por Categoria")
+            print("4 - Gráfico: Despesas por Categoria")
+            print("5 - Gráfico: Balanço Mensal")
+            print("0 - Voltar ao menu principal")
 
-            valores = [total_receitas, total_despesas, total_saldo]
-            labels = ["Receitas", "Despesas", "Saldo"]
+            try:
+                op_grafico = int(input("Escolha o gráfico: "))
+            except ValueError:
+                continue
 
-            plt.figure(figsize=(7, 7))
-            plt.pie(valores, labels=labels, autopct='%1.1f%%')
-            plt.title("Receita x Despesa x Saldo — Últimos 30 dias")
-            plt.tight_layout()
-            plt.show()
-
-            # -----------------------------
-            # 🟩 GRÁFICO DE RECEITAS POR CATEGORIA
-            # -----------------------------
-            receitas_por_categoria = {cat: 0 for cat in CATEGORIAS_RECEITA}
-
-            for t in transacoes_periodo:
-                if t.tipo == "receita":
-                    if t.categoria in receitas_por_categoria:
-                        receitas_por_categoria[t.categoria] += t.valor
-                    else:
-                        receitas_por_categoria["Outros"] += t.valor
-
-            valores_receita = list(receitas_por_categoria.values())
-            labels_receita = list(receitas_por_categoria.keys())
-
-            if sum(valores_receita) > 0:
-                plt.figure(figsize=(7, 7))
-                plt.pie(valores_receita, labels=labels_receita, autopct='%1.1f%%')
-                plt.title("Receitas por Categoria — Últimos 30 dias")
-                plt.tight_layout()
-                plt.show()
+            if op_grafico == 0:
+                break
+            elif op_grafico == 1:
+                self.listar_transacoes(lista_filtrada)
+                self.saldo(lista_filtrada)
+            elif op_grafico == 2:
+                gf.plotar_receita_vs_despesa(lista_filtrada)
+            elif op_grafico == 3:
+                gf.plotar_categorias_receita(lista_filtrada)
+            elif op_grafico == 4:
+                gf.plotar_categorias_despesa(lista_filtrada)
+            elif op_grafico == 5:
+                gf.plotar_balanco_mensal(lista_filtrada)
             else:
-                print("\nNenhuma receita registrada no período para gerar gráfico por categoria.")
-
-
-        # -----------------------------
-        # 🟦 GRÁFICO MENSAL DO PERÍODO
-        # -----------------------------
-
-        # Cria listas para meses e valores
-        meses_ordem = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul",
-                       "Ago", "Set", "Out", "Nov", "Dez"]
-
-        receitas_mensais = {m: 0 for m in meses_ordem}
-        despesas_mensais = {m: 0 for m in meses_ordem}
-
-        # Popular dados APENAS do período
-        for t in transacoes_periodo:
-            mes_nome = meses_ordem[t.data.month - 1]
-
-            if t.tipo == "receita":
-                receitas_mensais[mes_nome] += t.valor
-            elif t.tipo == "despesa":
-                despesas_mensais[mes_nome] += t.valor
-
-        # Listas para o gráfico
-        meses = list(receitas_mensais.keys())
-        receitas = list(receitas_mensais.values())
-        despesas = list(despesas_mensais.values())
-        saldo = [r - d for r, d in zip(receitas, despesas)]
-
-        # Montar o gráfico
-        x = np.arange(len(meses))
-        largura = 0.25
-
-        plt.figure(figsize=(10, 5))
-        plt.bar(x - largura, receitas, width=largura, label='Receitas', color='blue')
-        plt.bar(x, despesas, width=largura, label='Despesas', color='orange')
-        plt.bar(x + largura, saldo, width=largura, label='Saldo', color='green')
-
-        plt.title("Receita x Despesa x Saldo — Últimos 30 dias (por mês)")
-        plt.xlabel("Meses")
-        plt.ylabel("Valores (R$)")
-        plt.xticks(x, meses)
-        plt.legend()
-        plt.grid(axis='y', linestyle='--', alpha=0.3)
-
-        plt.tight_layout()
-        plt.show()
-
-
-
-    def carregar_transacoes(self):
-        self.transacoes = []  # limpa antes de carregar para evitar duplicação
-        dados = self.db.buscar_transacoes()
-        for d in dados:
-            transacao = Transacao.from_dict(d)
-            self.transacoes.append(transacao)
-
+                print("Opção inválida.")
 
 
     def escolher_categoria(self, tipo):
-        if (tipo == "receita"):
+        if tipo == "receita":
             categorias = self.CATEGORIAS_RECEITA
         else:
             categorias = self.CATEGORIAS_DESPESA
@@ -243,14 +175,12 @@ class ControleFinanceiro:
             print(f"{i} - {cat}")
         try:
             op = int(input("Selecione: "))
-            if (1 <= op <= len(categorias)):
+            if 1 <= op <= len(categorias):
                 return categorias[op - 1]
         except ValueError:
             pass
         print("Opção inválida. Categoria definida como 'Outros'.")
         return "Outros"
-
-
 
     def converter_dolar_para_real(self, valor_em_dolar):
         try:
@@ -260,10 +190,8 @@ class ControleFinanceiro:
 
             if resposta.status_code == 200:
                 dados = resposta.json()
-                # 'bid' é o valor de compra (geralmente usado como referência de mercado)
                 cotacao = float(dados['USDBRL']['bid'])
                 valor_convertido = valor_em_dolar * cotacao
-
                 print(f"Cotação Atual: R$ {cotacao:.2f}")
                 print(f"Valor Convertido: US$ {valor_em_dolar:.2f} -> R$ {valor_convertido:.2f}")
                 return valor_convertido
@@ -274,13 +202,13 @@ class ControleFinanceiro:
             print(f"Erro na conversão: {e}")
             return valor_em_dolar
 
-    def escolher_forma_pgto(self):                   # novo mét. escolher forma de pagamento
+    def escolher_forma_pgto(self):
         print("\nEscolha a forma de pagamento ou recebimento: ")
         for i, f in enumerate(self.FORMAS_PGTO, start=1):
             print(f"{i} - {f}")
         try:
             op = int(input("Selecione: "))
-            if (1 <= op <= len(self.FORMAS_PGTO)):
+            if 1 <= op <= len(self.FORMAS_PGTO):
                 return self.FORMAS_PGTO[op - 1]
         except ValueError:
             pass
