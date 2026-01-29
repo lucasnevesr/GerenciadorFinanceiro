@@ -2,7 +2,8 @@ import datetime
 import requests
 from database import Database
 from transacoes import Transacao
-import graficos as gf  # Importa o módulo de gráficos que criamos
+import graficos as gf
+from tabulate import tabulate
 
 class ControleFinanceiro:
     # Categorias definidas dentro da classe
@@ -50,13 +51,79 @@ class ControleFinanceiro:
         else:
             transacoes = self.transacoes
 
-        print("=== Lista de Transações ===")
+        print("\n=== Extrato de Transações ===")
         if not transacoes:
             print("Nenhuma transação registrada.")
+            return
+
+        # Prepara os dados para a tabela
+        tabela_dados = []
+
+        # Cabeçalho da tabela
+        cabecalho = ["ID", "Data", "Tipo", "Categoria", "Valor (R$)", "Forma Pgto"]
+
+        for i, t in enumerate(transacoes, start=1):
+            # Formata a data para dia/mês/ano
+            data_formatada = t.data.strftime("%d/%m/%Y")
+
+            # Formata o tipo (Maiúsculo)
+            tipo_formatado = t.tipo.upper()
+
+            # Formata o valor (Alinhamento visual)
+            valor_formatado = f"{t.valor:.2f}"
+
+            # Adiciona a linha na lista da tabela
+            tabela_dados.append([
+                i,
+                data_formatada,
+                tipo_formatado,
+                t.categoria,
+                valor_formatado,
+                t.forma_pgto
+            ])
+
+        # Imprime usando a biblioteca tabulate
+        # tablefmt="fancy_grid" cria essas bordas bonitas conectadas
+        print(tabulate(tabela_dados, headers=cabecalho, tablefmt="fancy_grid"))
+
+    def exibir_menu_listagem(self):
+        print("\n--- FILTRAR VISUALIZAÇÃO ---")
+        print()
+        print("[1] - Listar Receitas")
+        print("[2] - Listar Despesas")
+        print("[3] - Todas as Transações")
+        print()
+
+        try:
+            op = int(input("Selecione: "))
+        except ValueError:
+            print("Opção inválida.")
+            return
+
+        lista_filtrada = []
+
+        if op == 1:
+            # Cria uma lista nova contendo apenas receitas
+            lista_filtrada = [t for t in self.transacoes if t.tipo == 'receita']
+            print(f"\n Exibindo apenas RECEITAS ({len(lista_filtrada)} registros):")
+
+        elif op == 2:
+            # Cria uma lista nova contendo apenas despesas
+            lista_filtrada = [t for t in self.transacoes if t.tipo == 'despesa']
+            print(f"\n Exibindo apenas DESPESAS ({len(lista_filtrada)} registros):")
+
+        elif op == 3:
+            # Usa a lista completa original
+            lista_filtrada = self.transacoes
+            print(f"\n Exibindo TODAS as transações ({len(lista_filtrada)} registros):")
+
         else:
-            # O enumerate começa do 1
-            for i, t in enumerate(transacoes, start=1):
-                print(f"{i} - {t}")
+            print("Opção inválida.")
+            return
+
+        # Chama o metodo que ja existe passando a lista acima
+        self.listar_transacoes(lista_filtrada)
+
 
     def carregar_transacoes(self):
         self.transacoes = []  # limpa antes de carregar para evitar duplicação
@@ -94,13 +161,14 @@ class ControleFinanceiro:
 
 
     def menu_relatorios(self):
-        print("\n=== SELEÇÃO DE PERÍODO ===")
-        print("1 - Últimos 30 dias")
-        print("2 - Últimos 60 dias")
-        print("3 - Últimos 90 dias")
-        print("4 - Último Ano (365 dias)")
-        print("5 - Todo o período")
-        print("0 - Voltar")
+        print("\n=== SELECIONE O PERÍODO ===")
+        print()
+        print("[1] - Últimos 30 dias")
+        print("[2] - Últimos 60 dias")
+        print("[3] - Últimos 90 dias")
+        print("[4] - Último Ano (365 dias)")
+        print("[5] - Todo o período")
+        print("[0] - Voltar")
 
         try:
             op_periodo = int(input("Escolha o período: "))
@@ -134,13 +202,13 @@ class ControleFinanceiro:
 
         #menu tipo de gráfico (loop para permitir ver vários sem sair)
         while True:
-            print("\n--- TIPOS DE RELATÓRIO ---")
-            print("1 - Listar Transações e Saldo")
-            print("2 - Gráfico: Receita x Despesa")
-            print("3 - Gráfico: Receitas por Categoria")
-            print("4 - Gráfico: Despesas por Categoria")
-            print("5 - Gráfico: Balanço Mensal")
-            print("0 - Voltar ao menu principal")
+            print("\n--- TIPOS DE RELATÓRIO (GRÁFICO) ---")
+            print()
+            print("[1] - Gráfico: Receita x Despesa")
+            print("[2] - Gráfico: Receitas por Categoria")
+            print("[3] - Gráfico: Despesas por Categoria")
+            print("[4] - Gráfico: Balanço Mensal")
+            print("[0] - Voltar ao menu principal")
 
             try:
                 op_grafico = int(input("Escolha o gráfico: "))
@@ -149,16 +217,14 @@ class ControleFinanceiro:
 
             if op_grafico == 0:
                 break
+
             elif op_grafico == 1:
-                self.listar_transacoes(lista_filtrada)
-                self.saldo(lista_filtrada)
-            elif op_grafico == 2:
                 gf.plotar_receita_vs_despesa(lista_filtrada)
-            elif op_grafico == 3:
+            elif op_grafico == 2:
                 gf.plotar_categorias_receita(lista_filtrada)
-            elif op_grafico == 4:
+            elif op_grafico == 3:
                 gf.plotar_categorias_despesa(lista_filtrada)
-            elif op_grafico == 5:
+            elif op_grafico == 4:
                 gf.plotar_balanco_mensal(lista_filtrada)
             else:
                 print("Opção inválida.")

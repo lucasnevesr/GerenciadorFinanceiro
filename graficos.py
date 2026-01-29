@@ -1,5 +1,20 @@
+import matplotlib
+matplotlib.use('TkAgg') #força o python a abrir uma janela nova para o gráfico
+
 import matplotlib.pyplot as plt
 import numpy as np
+
+
+
+def formatar_rotulo_pizza(valores):
+    def formatar(pct):
+        #calcula o valor absoluto baseado na porcentagem
+        total = sum(valores)
+        val = pct * total / 100.0
+        #retorna porcentagem na linha de cima e valor em reais na linha de baixo
+        return '{p:.1f}%\n(R$ {v:.2f})'.format(p=pct, v=val)
+
+    return formatar
 
 
 def plotar_receita_vs_despesa(transacoes):
@@ -12,10 +27,10 @@ def plotar_receita_vs_despesa(transacoes):
 
     valores = [total_receitas, total_despesas]
     labels = ["Receitas", "Despesas"]
-    cores = ['#4CAF50', '#F44336']  # Verde e Vermelho
+    cores = ['#4CAF50', '#F44336']  #verde e vermelho
 
-    plt.figure(figsize=(6, 6))
-    plt.pie(valores, labels=labels, autopct='%1.1f%%', colors=cores, startangle=90)
+    plt.figure(figsize=(8, 6))
+    plt.pie(valores, labels=labels, autopct=formatar_rotulo_pizza(valores), colors=cores, startangle=90)
     plt.title("Receita vs Despesa")
     plt.tight_layout()
     plt.show()
@@ -34,8 +49,8 @@ def plotar_categorias_receita(transacoes):
     valores = list(dados.values())
     labels = list(dados.keys())
 
-    plt.figure(figsize=(7, 7))
-    plt.pie(valores, labels=labels, autopct='%1.1f%%')
+    plt.figure(figsize=(8, 8))
+    plt.pie(valores, labels=labels, autopct=formatar_rotulo_pizza(valores))
     plt.title("Distribuição de Receitas por Categoria")
     plt.tight_layout()
     plt.show()
@@ -54,8 +69,8 @@ def plotar_categorias_despesa(transacoes):
     valores = list(dados.values())
     labels = list(dados.keys())
 
-    plt.figure(figsize=(7, 7))
-    plt.pie(valores, labels=labels, autopct='%1.1f%%')
+    plt.figure(figsize=(8, 8))
+    plt.pie(valores, labels=labels, autopct=formatar_rotulo_pizza(valores))
     plt.title("Distribuição de Despesas por Categoria")
     plt.tight_layout()
     plt.show()
@@ -63,7 +78,6 @@ def plotar_categorias_despesa(transacoes):
 
 def plotar_balanco_mensal(transacoes):
     # Dicionário para agrupar por (Ano, Mês)
-    # Exemplo da chave: (2026, 1) para Janeiro de 2026
     dados_mensais = {}
 
     for t in transacoes:
@@ -81,17 +95,15 @@ def plotar_balanco_mensal(transacoes):
         print("Sem dados suficientes para gráfico mensal.")
         return
 
-    # Ordena as chaves cronologicamente (Ano, depois Mês)
+    #ordena as chaves cronologicamente
     chaves_ordenadas = sorted(dados_mensais.keys())
 
-    # Prepara as listas para o gráfico
     labels = []
     receitas = []
     despesas = []
     saldos = []
 
     for ano, mes in chaves_ordenadas:
-        # Formata o rótulo como "MM/AAAA" (ex: 01/2026)
         label_mes = f"{mes:02d}/{ano}"
         labels.append(label_mes)
 
@@ -102,11 +114,10 @@ def plotar_balanco_mensal(transacoes):
         despesas.append(d)
         saldos.append(r - d)
 
-    # Configuração das barras
     x = np.arange(len(labels))
     largura = 0.25
 
-    plt.figure(figsize=(10, 6))  # Aumentei um pouco a altura
+    plt.figure(figsize=(10, 6))
     plt.bar(x - largura, receitas, width=largura, label='Receitas', color='blue')
     plt.bar(x, despesas, width=largura, label='Despesas', color='orange')
     plt.bar(x + largura, saldos, width=largura, label='Saldo', color='green')
@@ -114,10 +125,9 @@ def plotar_balanco_mensal(transacoes):
     plt.title("Balanço Mensal (Período Selecionado)")
     plt.xlabel("Mês/Ano")
     plt.ylabel("Valores (R$)")
-    plt.xticks(x, labels)  # Usa os rótulos dinâmicos
+    plt.xticks(x, labels)
     plt.legend()
     plt.grid(axis='y', linestyle='--', alpha=0.3)
 
-    # Ajuste para não cortar legendas se houver muitos meses
     plt.tight_layout()
     plt.show()
