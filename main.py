@@ -1,5 +1,5 @@
 import datetime
-import os  # <--- IMPORTANTE: Importar para controlar o terminal
+import os  #importar para controlar o terminal
 from transacoes import Transacao
 from controle_financeiro import ControleFinanceiro
 

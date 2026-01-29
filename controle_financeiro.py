@@ -207,7 +207,7 @@ class ControleFinanceiro:
             print("[1] - Gráfico: Receita x Despesa")
             print("[2] - Gráfico: Receitas por Categoria")
             print("[3] - Gráfico: Despesas por Categoria")
-            print("[4] - Gráfico: Balanço Mensal")
+            print("[4] - Gráfico: Balanço do Período")
             print("[0] - Voltar ao menu principal")
 
             try:
