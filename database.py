@@ -55,3 +55,27 @@ class Database:
         }
         # delete_one apaga apenas a primeira ocorrência encontrada
         self.collection.delete_one(filtro)
+
+
+    def atualizar_transacao(self, transacao_antiga_dados, transacao_nova):
+        # 1. Filtro: Procura no banco um documento IGUAL ao que estava antes da edição
+        filtro = {
+            "tipo": transacao_antiga_dados.tipo,
+            "valor": transacao_antiga_dados.valor,
+            "data": datetime.datetime.combine(transacao_antiga_dados.data, datetime.time()),
+            "categoria": transacao_antiga_dados.categoria,
+            "forma_pgto": transacao_antiga_dados.forma_pgto
+        }
+
+        # 2. Novos Valores: O que será gravado no lugar
+        novos_valores = {
+            "$set": {
+                "tipo": transacao_nova.tipo,
+                "valor": transacao_nova.valor,
+                "data": datetime.datetime.combine(transacao_nova.data, datetime.time()),
+                "categoria": transacao_nova.categoria,
+                "forma_pgto": transacao_nova.forma_pgto
+            }
+        }
+
+        self.collection.update_one(filtro, novos_valores)

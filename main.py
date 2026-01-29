@@ -51,6 +51,7 @@ def menu():
         print("[4] - Consultar Saldo")
         print("[5] - Relatórios (Gráficos)")
         print("[6] - Remover Transação")
+        print("[7] - Editar Transação")
         print("[0] - Sair")
         print("-" * 30)  #linha divisória
 
@@ -134,6 +135,11 @@ def menu():
         elif (op == 6):
             limpar_tela()
             obj_cf.excluir_transacao()
+            pausa()
+
+        elif (op == 7):
+            limpar_tela()
+            obj_cf.editar_transacao()
             pausa()
 
         elif (op == 0):

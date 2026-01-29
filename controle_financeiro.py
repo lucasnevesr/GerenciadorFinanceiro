@@ -4,6 +4,7 @@ from database import Database
 from transacoes import Transacao
 import graficos as gf
 from tabulate import tabulate
+import copy
 
 class ControleFinanceiro:
     # Categorias definidas dentro da classe
@@ -280,3 +281,73 @@ class ControleFinanceiro:
             pass
         print("Opção inválida. Forma de pagamento definida como 'Outros'.")
         return "Outros"
+
+    def editar_transacao(self):
+        self.listar_transacoes()
+        if not self.transacoes:
+            return
+
+        try:
+            indice = int(input("Digite o ID da transação para editar: "))
+            idx_real = indice - 1
+
+            if not (0 <= idx_real < len(self.transacoes)):
+                print("ID inválido.")
+                return
+
+            # Pega o objeto da lista
+            transacao = self.transacoes[idx_real]
+
+            # CRUCIAL: Faz uma cópia profunda dos dados ANTES de editar
+            # Isso serve para a gente conseguir achar ela no banco de dados depois
+            transacao_antiga_backup = copy.deepcopy(transacao)
+
+            print(f"\nEditando: {transacao}")
+            print("O que você deseja alterar?")
+            print("[1] - Valor")
+            print("[2] - Data")
+            print("[3] - Categoria")
+            print("[4] - Forma de Pagamento")
+            print("[0] - Cancelar")
+
+            op = int(input("Opção: "))
+
+            if op == 0:
+                print("Edição cancelada.")
+                return
+
+            elif op == 1:  # Valor
+                novo_valor = float(input("Novo Valor: R$ "))
+                if novo_valor < 0:
+                    print("Valor não pode ser negativo.")
+                    return
+                transacao.valor = novo_valor
+
+            elif op == 2:  # Data
+                entrada_data = input("Nova Data (dd/mm/aaaa): ")
+                try:
+                    nova_data = datetime.datetime.strptime(entrada_data, "%d/%m/%Y").date()
+                    transacao.data = nova_data
+                except ValueError:
+                    print("Data inválida. Alteração cancelada.")
+                    return
+
+            elif op == 3:  # Categoria
+                nova_cat = self.escolher_categoria(transacao.tipo)
+                transacao.categoria = nova_cat
+
+            elif op == 4:  # Forma Pgto
+                nova_forma = self.escolher_forma_pgto()
+                transacao.forma_pgto = nova_forma
+
+            else:
+                print("Opção inválida.")
+                return
+
+            # Se chegou aqui, atualiza no Banco de Dados
+            # Passamos o BACKUP (para achar quem era) e o objeto ATUAL (com a mudança)
+            self.db.atualizar_transacao(transacao_antiga_backup, transacao)
+            print("✅ Transação atualizada com sucesso!")
+
+        except ValueError:
+            print("Entrada inválida.")
